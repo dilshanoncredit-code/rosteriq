@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RosterIQ — Day Off Requests</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0f;
+  --surface: #0e1118;
+  --card: #141720;
+  --card2: #191e2a;
+  --border: #1e2535;
+  --border2: #252d3f;
+  --accent: #00e5a0;
+  --accent-dim: rgba(0,229,160,0.12);
+  --accent-glow: rgba(0,229,160,0.25);
+  --purple: #7c6fff;
+  --purple-dim: rgba(124,111,255,0.12);
+  --red: #ff5b5b;
+  --red-dim: rgba(255,91,91,0.10);
+  --gold: #f5c842;
+  --gold-dim: rgba(245,200,66,0.10);
+  --warn: #ff9f43;
+  --text: #dde3f0;
+  --text2: #8892a8;
+  --text3: #4a5468;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* BG GRID */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,160,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,160,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── LOGIN SCREEN ─────────────────────────── */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  background: var(--bg);
+}
+.login-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 32px;
+  letter-spacing: -1px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+.login-brand span { color: var(--accent); }
+.login-tagline {
+  font-size: 13px; color: var(--text2);
+  margin-bottom: 36px; text-align: center;
+}
+
+/* LOGIN TYPE SWITCHER */
+.login-switch {
+  display: flex; gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px; margin-bottom: 24px;
+  width: 100%; max-width: 360px;
+}
+.switch-btn {
+  flex: 1; padding: 9px 0;
+  border: none; border-radius: 7px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  background: transparent; color: var(--text2);
+}
+.switch-btn.active {
+  background: var(--card2);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* LOGIN BOX */
+.login-box {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 28px 24px;
+  width: 100%; max-width: 360px;
+}
+.lgroup { margin-bottom: 14px; }
+.lgroup label {
+  display: block;
+  font-size: 10px; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 6px; font-weight: 600;
+}
+.lgroup select, .lgroup input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 11px 13px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color .2s;
+  -webkit-appearance: none;
+}
+.lgroup select:focus, .lgroup input:focus { border-color: var(--accent); }
+.nic-hint {
+  margin-top: 5px; font-size: 11px; color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  display: none;
+}
+.login-err {
+  display: none;
+  background: var(--red-dim);
+  border: 1px solid rgba(255,91,91,0.25);
+  color: var(--red);
+  padding: 9px 12px; border-radius: 8px;
+  font-size: 13px; margin-bottom: 12px;
+  text-align: center;
+}
+.login-btn {
+  width: 100%; padding: 12px;
+  background: var(--accent); color: #080a0f;
+  border: none; border-radius: 9px;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: all .2s;
+  margin-top: 4px;
+}
+.login-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* ── MAIN HEADER ────────────────────────── */
+#mainHeader {
+  display: none;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,10,15,0.96);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 58px;
+  align-items: center; justify-content: space-between;
+}
+.hdr-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 18px; letter-spacing: -.5px;
+}
+.hdr-brand span { color: var(--accent); }
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+.hdr-user {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px 5px 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  cursor: default;
+}
+.hdr-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 12px; flex-shrink: 0;
+}
+.hdr-avatar.admin { background: var(--accent-dim); color: var(--accent); }
+.hdr-avatar.agent { background: var(--purple-dim); color: var(--purple); }
+.hdr-avatar.tl { background: var(--gold-dim); color: var(--gold); }
+.hdr-name { font-size: 13px; font-weight: 500; }
+.sync-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.logout-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 5px 10px;
+  border-radius: 7px; font-size: 12px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* ── MAIN CONTENT ───────────────────────── */
+#mainPage { display: none; position: relative; z-index: 1; }
+.container { max-width: 640px; margin: 0 auto; padding: 28px 16px 80px; }
+.week-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 20px;
+  margin-bottom: 22px;
+}
+
+/* ── ADMIN PANELS ───────────────────────── */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.section-hdr {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 15px;
+}
+.section-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* TOGGLE SWITCH */
+.toggle-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.toggle-label { font-size: 13px; font-weight: 500; }
+.toggle {
+  position: relative; width: 48px; height: 26px;
+  flex-shrink: 0;
+}
+.toggle input { display: none; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border2);
+  border-radius: 26px;
+  cursor: pointer;
+  transition: all .25s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 3px; top: 3px;
+  background: var(--text2);
+  border-radius: 50%;
+  transition: all .25s;
+}
+.toggle input:checked + .toggle-slider { background: var(--accent); }
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(22px);
+  background: #080a0f;
+}
+.toggle-status {
+  font-size: 12px; font-weight: 600;
+  font-family: 'DM Mono', monospace;
+}
+.toggle-status.on { color: var(--accent); }
+.toggle-status.off { color: var(--text3); }
+
+/* SLOTS GRID */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.slot-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 11px 8px;
+  text-align: center;
+}
+.slot-day {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 12px;
+  margin-bottom: 2px;
+}
+.slot-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--text3);
+  margin-bottom: 8px;
+}
+.slot-input-wrap { position: relative; }
+.slot-input {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  color: var(--text); text-align: center;
+  padding: 6px 4px;
+  border-radius: 7px;
+  font-family: 'DM Mono', monospace;
+  font-size: 16px; font-weight: 600;
+  outline: none;
+  transition: border-color .2s;
+  -moz-appearance: textfield;
+}
+.slot-input::-webkit-outer-spin-button,
+.slot-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.slot-input:focus { border-color: var(--accent); }
+.slot-used {
+  font-size: 10px; color: var(--text3);
+  margin-top: 5px;
+  font-family: 'DM Mono', monospace;
+}
+.slot-bar { height: 3px; border-radius: 2px; background: var(--border); margin-top: 4px; overflow: hidden; }
+.slot-bar-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+.save-slots-btn {
+  width: 100%; margin-top: 12px;
+  padding: 10px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(0,229,160,0.3);
+  color: var(--accent);
+  border-radius: 9px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.save-slots-btn:hover { background: var(--accent); color: #080a0f; }
+
+/* REQUESTS LIST */
+.req-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+.req-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3);
+  min-width: 24px;
+}
+.req-name { font-size: 13px; font-weight: 500; flex: 1; }
+.req-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; padding: 2px 7px;
+  border-radius: 4px;
+}
+.req-role.tl { background: var(--gold-dim); color: var(--gold); }
+.req-role.ad { background: var(--purple-dim); color: var(--purple); }
+.req-day {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--accent);
+  background: var(--accent-dim);
+  padding: 3px 8px; border-radius: 5px;
+}
+.req-del {
+  background: none; border: none;
+  color: var(--text3); cursor: pointer;
+  font-size: 14px; padding: 2px 5px;
+  border-radius: 4px; transition: all .15s;
+}
+.req-del:hover { color: var(--red); background: var(--red-dim); }
+.empty-msg {
+  text-align: center; padding: 20px;
+  color: var(--text3); font-size: 13px;
+}
+
+/* ── AGENT VIEW ─────────────────────────── */
+.closed-banner {
+  background: var(--red-dim);
+  border: 1px solid rgba(255,91,91,0.2);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.closed-icon { font-size: 32px; margin-bottom: 8px; }
+.closed-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 16px;
+  margin-bottom: 4px; color: var(--red);
+}
+.closed-sub { font-size: 13px; color: var(--text2); }
+
+/* SLOTS DISPLAY (agent view) */
+.agent-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px; margin-bottom: 16px;
+}
+.agent-slot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 4px;
+  text-align: center;
+}
+.agent-slot-day {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 12px;
+  margin-bottom: 2px;
+}
+.agent-slot-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--text3);
+  margin-bottom: 6px;
+}
+.agent-slot-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800;
+  line-height: 1;
+}
+.agent-slot-lbl { font-size: 9px; color: var(--text3); margin-top: 2px; }
+.aslot-bar { height: 3px; border-radius: 2px; background: var(--border); margin-top: 5px; overflow: hidden; }
+.aslot-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
+/* DAY PICKER */
+.day-picker {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px; margin-bottom: 14px;
+}
+.day-pick-btn {
+  padding: 12px 4px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text2);
+  text-align: center; cursor: pointer;
+  transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.day-pick-btn .dpd { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; display: block; }
+.day-pick-btn .dpa { font-size: 10px; font-family: 'DM Mono', monospace; margin-top: 3px; }
+.day-pick-btn:not(.full):not(.sel):hover { border-color: var(--accent); color: var(--text); }
+.day-pick-btn.sel { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.day-pick-btn.full { opacity: .35; cursor: not-allowed; border-style: dashed; }
+
+/* EXISTING REQUEST */
+.exist-req {
+  background: var(--accent-dim);
+  border: 1px solid rgba(0,229,160,0.2);
+  border-radius: 11px;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.exist-req .eicon { font-size: 20px; }
+.exist-req-info { flex: 1; }
+.exist-req-day { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+.exist-req-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.cancel-req-btn {
+  background: none;
+  border: 1px solid rgba(255,91,91,0.35);
+  color: var(--red); padding: 6px 11px;
+  border-radius: 8px; font-size: 12px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.cancel-req-btn:hover { background: var(--red-dim); }
+
+/* NOTICES */
+.notice {
+  padding: 10px 13px; border-radius: 9px;
+  font-size: 13px; margin-bottom: 12px; display: none;
+}
+.notice.err { background: var(--red-dim); border: 1px solid rgba(255,91,91,.25); color: var(--red); }
+.notice.ok { background: var(--accent-dim); border: 1px solid rgba(0,229,160,.25); color: var(--accent); }
+
+/* SUBMIT BTN */
+.submit-btn {
+  width: 100%; padding: 13px;
+  background: var(--accent); color: #080a0f;
+  border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: all .2s;
+}
+.submit-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.submit-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+/* ALL REQUESTS */
+.all-req-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px; margin-bottom: 5px;
+}
+.all-req-item.mine {
+  border-color: rgba(0,229,160,.3);
+  background: rgba(0,229,160,.04);
+}
+.ari-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); min-width: 24px; }
+.ari-name { font-size: 13px; font-weight: 500; flex: 1; }
+.ari-you {
+  font-size: 9px; font-family: 'DM Mono', monospace;
+  background: var(--accent-dim); color: var(--accent);
+  padding: 2px 6px; border-radius: 3px;
+}
+.ari-tl {
+  font-size: 9px; font-family: 'DM Mono', monospace;
+  background: var(--gold-dim); color: var(--gold);
+  padding: 2px 6px; border-radius: 3px;
+}
+.ari-day {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--accent); background: var(--accent-dim);
+  padding: 3px 8px; border-radius: 5px;
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--accent); color: #080a0f;
+  padding: 11px 22px; border-radius: 10px;
+  font-size: 13px; font-weight: 700;
+  opacity: 0; transition: all .3s; z-index: 999;
+  font-family: 'DM Sans', sans-serif; white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-brand">Roster<span>IQ</span></div>
+  <div class="login-tagline">Day-Off Request Portal</div>
+
+  <div class="login-switch">
+    <button class="switch-btn active" id="switchAdmin" onclick="setLoginMode('admin')">🔐 Admin</button>
+    <button class="switch-btn" id="switchAgent" onclick="setLoginMode('agent')">👤 Agent / TL</button>
+  </div>
+
+  <div class="login-box">
+    <!-- ADMIN FORM -->
+    <div id="adminForm">
+      <div class="lgroup">
+        <label>Username</label>
+        <input type="text" id="adminUser" placeholder="admin" onkeydown="if(event.key==='Enter')document.getElementById('adminPw').focus()">
+      </div>
+      <div class="lgroup">
+        <label>Password</label>
+        <input type="password" id="adminPw" placeholder="Enter password…" onkeydown="if(event.key==='Enter')doAdminLogin()">
+      </div>
+      <div class="login-err" id="adminErr">❌ Wrong username or password</div>
+      <button class="login-btn" onclick="doAdminLogin()">Login as Admin →</button>
+    </div>
+
+    <!-- AGENT FORM -->
+    <div id="agentForm" style="display:none">
+      <div class="lgroup">
+        <label>Your Name</label>
+        <select id="agentSel" onchange="onAgentSelect()">
+          <option value="">— Select your name —</option>
+        </select>
+      </div>
+      <div class="lgroup">
+        <label>NIC Number (Password)</label>
+        <input type="password" id="agentNic" placeholder="Enter your NIC…"
+               oninput="clearAgentErr()"
+               onkeydown="if(event.key==='Enter')doAgentLogin()">
+        <div class="nic-hint" id="nicHint"></div>
+      </div>
+      <div class="login-err" id="agentErr">❌ Wrong NIC. Please try again.</div>
+      <button class="login-btn" style="background:var(--purple);color:#fff" onclick="doAgentLogin()">Login →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HEADER ════════════════════════════════════ -->
+<header id="mainHeader">
+  <div class="hdr-brand">Roster<span>IQ</span></div>
+  <div class="hdr-right">
+    <div id="syncPill" class="sync-pill">⏳ …</div>
+    <div class="hdr-user">
+      <div class="hdr-avatar" id="hdrAvatar"></div>
+      <span class="hdr-name" id="hdrName"></span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+</header>
+
+<!-- ══ MAIN PAGE ══════════════════════════════════ -->
+<div id="mainPage">
+  <div class="container">
+    <div class="week-chip">📅 <span id="weekLabel">Week of 02 Mar – 06 Mar 2025</span></div>
+
+    <!-- ── ADMIN VIEW ── -->
+    <div id="adminView" style="display:none">
+
+      <!-- TOGGLE REQUEST WINDOW -->
+      <div class="section">
+        <div class="section-hdr">
+          <div>
+            <div class="section-title">Request Window</div>
+            <div class="section-sub">Enable to allow agents to submit day-off requests</div>
+          </div>
+          <div class="toggle-wrap">
+            <span class="toggle-status" id="toggleStatus">OFF</span>
+            <label class="toggle">
+              <input type="checkbox" id="requestToggle" onchange="onToggleChange()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div id="toggleHint" style="font-size:12px;color:var(--text3);padding:9px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+          🔒 Requests are currently <strong style="color:var(--red)">CLOSED</strong> — agents cannot submit requests.
+        </div>
+      </div>
+
+      <!-- SLOT CONFIG + DATE RANGE PICKER -->
+      <div class="section">
+        <div class="section-hdr" style="margin-bottom:16px">
+          <div>
+            <div class="section-title">Off Slots Per Day</div>
+            <div class="section-sub">Set the week, then configure max agents off per day</div>
+          </div>
+        </div>
+
+        <!-- CUSTOM DATE PICKER -->
+        <div style="margin-bottom:12px;">
+
+          <!-- Display row -->
+          <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:5px">Week Start (Monday)</div>
+              <div id="weekStartDisplay" onclick="toggleCalendar()"
+                style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:9px;font-size:13px;font-family:'DM Mono',monospace;cursor:pointer;box-sizing:border-box;user-select:none;transition:border-color .2s;"
+                onmouseover="this.style.borderColor='var(--accent)'"
+                onmouseout="this.style.borderColor='var(--border2)'">
+                📅 Click to select Monday…
+              </div>
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:5px">Week End (Friday)</div>
+              <div id="weekEndDisplay"
+                style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:10px 12px;border-radius:9px;font-size:13px;font-family:'DM Mono',monospace;box-sizing:border-box;">
+                Auto-filled
+              </div>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button onclick="applyWeekDates()"
+              style="flex:1;padding:10px 18px;background:var(--accent);color:#080a0f;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;"
+              onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+              Apply ✓
+            </button>
+            <button onclick="resetWeekDates()"
+              style="padding:10px 16px;background:var(--red-dim);border:1px solid rgba(255,91,91,.3);color:var(--red);border-radius:9px;font-size:13px;cursor:pointer;font-weight:600;transition:all .15s;"
+              onmouseover="this.style.background='var(--red)';this.style.color='#fff'"
+              onmouseout="this.style.background='var(--red-dim)';this.style.color='var(--red)'">
+              ✕ Reset
+            </button>
+          </div>
+
+          <!-- Inline Calendar popup -->
+          <div id="calendarPop" style="display:none;background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:16px;margin-bottom:10px;">
+            <!-- Month nav -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <button onclick="calNav(-1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">‹</button>
+              <span id="calMonthLabel" style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;"></span>
+              <button onclick="calNav(1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">›</button>
+            </div>
+            <!-- Day headers -->
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;">
+              <div style="text-align:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px;">Su</div>
+              <div style="text-align:center;font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;padding:3px;">Mo</div>
+              <div style="text-align:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px;">Tu</div>
+              <div style="text-align:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px;">We</div>
+              <div style="text-align:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px;">Th</div>
+              <div style="text-align:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px;">Fr</div>
+              <div style="text-align:center;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;padding:3px;">Sa</div>
+            </div>
+            <!-- Day cells -->
+            <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center;">Only Mondays are selectable</div>
+          </div>
+
+        </div>
+
+        <!-- DATE PREVIEW STRIP -->
+        <div id="weekDatePreview"
+          style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:14px;padding:8px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+          📅 Select a Monday above — Friday will auto-fill, then click Apply
+        </div>
+
+        <div class="slots-grid" id="adminSlotsGrid"></div>
+        <button class="save-slots-btn" onclick="saveSlots()">💾 Save Slot Configuration</button>
+      </div>
+
+      <!-- ALL REQUESTS -->
+      <div class="section">
+        <div class="section-hdr">
+          <div>
+            <div class="section-title">Submitted Requests</div>
+            <div class="section-sub" id="reqSummary">0 requests</div>
+          </div>
+          <div style="display:flex;gap:7px;">
+            <button onclick="exportRequests()"
+              style="background:var(--accent-dim);border:1px solid rgba(0,229,160,.25);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;"
+              onmouseover="this.style.background='var(--accent)';this.style.color='#080a0f'"
+              onmouseout="this.style.background='var(--accent-dim)';this.style.color='var(--accent)'">⬇ Export CSV</button>
+            <button onclick="clearAllRequests()" style="background:var(--red-dim);border:1px solid rgba(255,91,91,.25);color:var(--red);padding:5px 11px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">Clear All</button>
+          </div>
+        </div>
+        <div id="adminReqList"></div>
+      </div>
+    </div>
+
+    <!-- ── AGENT VIEW ── -->
+    <div id="agentView" style="display:none">
+
+      <!-- CLOSED BANNER (shown when disabled) -->
+      <div class="closed-banner" id="closedBanner" style="display:none">
+        <div class="closed-icon">🔒</div>
+        <div class="closed-title">Requests Closed</div>
+        <div class="closed-sub">Admin hasn't opened the request window yet.<br>Please check back later.</div>
+        <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2)" id="closedWeekInfo"></div>
+      </div>
+
+      <!-- OPEN STATE -->
+      <div id="agentOpenView">
+        <!-- WEEK DATE INFO -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:11px 14px;background:var(--card);border:1px solid var(--border2);border-radius:12px;">
+          <span style="font-size:18px">📅</span>
+          <div style="flex:1">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px" id="agentWeekTitle">Week Dates</div>
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-top:2px" id="agentWeekDates">Loading…</div>
+          </div>
+        </div>
+
+        <!-- SLOTS DISPLAY -->
+        <div class="section">
+          <div class="section-title" style="margin-bottom:12px">Available Slots This Week</div>
+          <div class="agent-slots-grid" id="agentSlotsDisplay"></div>
+        </div>
+
+        <!-- REQUEST FORM -->
+        <div class="section">
+          <div class="section-title" style="margin-bottom:14px">📩 My Day-Off Request</div>
+          <div class="notice err" id="agentNoticeErr"></div>
+          <div class="notice ok" id="agentNoticeOk"></div>
+
+          <!-- existing request badge -->
+          <div class="exist-req" id="existReqBadge" style="display:none">
+            <span class="eicon">✅</span>
+            <div class="exist-req-info">
+              <div class="exist-req-day" id="existReqDay"></div>
+              <div class="exist-req-sub">Your current request — cancel to change day</div>
+            </div>
+            <button class="cancel-req-btn" onclick="cancelMyReq()">Cancel</button>
+          </div>
+
+          <!-- day picker -->
+          <div id="dayPickerWrap">
+            <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600">Select Weekday Off</div>
+            <div class="day-picker" id="dayPicker"></div>
+            <button class="submit-btn" id="submitReqBtn" onclick="submitReq()" disabled style="margin-top:12px">Submit Request</button>
+          </div>
+        </div>
+
+        <!-- ALL REQUESTS -->
+        <div class="section">
+          <div class="section-title" style="margin-bottom:11px">📋 All Requests</div>
+          <div id="agentReqList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+// CONFIG  ← Edit these two lines
+// ════════════════════════════════════════════════════
+const FIREBASE_URL = "https://console.firebase.google.com/project/rosteriq-8f198/database/rosteriq-8f198-default-rtdb/data/~2F"; // e.g. https://rosteriq-xxxx-default-rtdb.firebaseio.com
+const WEEK_KEY     = "week_02mar";                 // change each week
+
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "admin123";
+
+const DAYS_SHORT = ['Mon','Tue','Wed','Thu','Fri'];
+const DAYS_FULL  = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const DAY_DATES  = ['02-Mar','03-Mar','04-Mar','05-Mar','06-Mar'];
+
+// ════════════════════════════════════════════════════
+// AGENTS  (Name + NIC)
+// ════════════════════════════════════════════════════
+const AGENTS = [
+  {id:1, known:"Achintha Dinujaya",    nic:"200328312235", role:"AD"},
+  {id:2, known:"Anthony Trevin",       nic:"200722301428", role:"AD"},
+  {id:3, known:"Bimali Shankila",      nic:"200361200512", role:"AD"},
+  {id:4, known:"Chamilka Oshadha",     nic:"200527704875", role:"AD"},
+  {id:5, known:"Chanthuka Malisha",    nic:"982903475V",   role:"AD"},
+  {id:6, known:"Charith Kumara",       nic:"200628103232", role:"AD"},
+  {id:7, known:"Chathuni Vimarsha",    nic:"977901766V",   role:"AD"},
+  {id:8, known:"Chathura Kosala",      nic:"991772529V",   role:"AD"},
+  {id:9, known:"Chathurangi Baddevithana", nic:"967213128V", role:"AD"},
+  {id:10,known:"Dahami Thisarani",     nic:"200751704956", role:"AD"},
+  {id:11,known:"Dewmi Madushani",      nic:"200686401999", role:"AD"},
+  {id:12,known:"Eshan Shashika",       nic:"981180445V",   role:"AD"},
+  {id:13,known:"Gihan Pamodh",         nic:"200202903913", role:"AD"},
+  {id:14,known:"Hansani Chathurika",   nic:"199882010320", role:"AD"},
+  {id:15,known:"Kalindu Sachith",      nic:"200013701750", role:"AD"},
+  {id:16,known:"Kemile Thevathason",   nic:"200077102672", role:"AD"},
+  {id:17,known:"Lakshan Perera",       nic:"199703803026", role:"AD"},
+  {id:18,known:"Maleesha Kalhara",     nic:"200428500190", role:"AD"},
+  {id:19,known:"Malinda Chathuranga",  nic:"922960445V",   role:"AD"},
+  {id:20,known:"Maneesha Perera",      nic:"200684303024", role:"AD"},
+  {id:21,known:"Methdinu Jayasinhe",   nic:"200428403488", role:"AD"},
+  {id:22,known:"Naduni Kaveesha",      nic:"987261498V",   role:"AD"},
+  {id:23,known:"Niroshan Buddika",     nic:"200319100728", role:"AD"},
+  {id:24,known:"Prarthana Dewmini",    nic:"200352000598", role:"AD"},
+  {id:25,known:"Raveesha Nethmini",    nic:"200257702879", role:"AD"},
+  {id:26,known:"Sandali Neththara",    nic:"200567302832", role:"AD"},
+  {id:27,known:"Sandali Nisansala",    nic:"978091644V",   role:"AD"},
+  {id:28,known:"Sandeepa Lakruwan",    nic:"200014900805", role:"AD"},
+  {id:29,known:"Sanduni Kaushalya",    nic:"995741695V",   role:"AD"},
+  {id:30,known:"Sanduni Rupika",       nic:"997395956V",   role:"AD"},
+  {id:31,known:"Sasantha Udesh",       nic:"200203303745", role:"AD"},
+  {id:32,known:"Senith Danidu",        nic:"200614301786", role:"AD"},
+  {id:33,known:"Shanmuganadan Nishaini",nic:"200454514256",role:"AD"},
+  {id:34,known:"Thanoj Vishman",       nic:"991043578V",   role:"AD"},
+  {id:35,known:"Thilina Hashan",       nic:"200330111383", role:"AD"},
+  {id:36,known:"Varuni Lakshani",      nic:"937820445V",   role:"AD"},
+  {id:37,known:"Asanka Nash",          nic:"893024069V",   role:"AD"},
+  {id:38,known:"Heshan Kalhara",       nic:"200321112194", role:"AD"},
+  {id:39,known:"Kavindu Kalhara",      nic:"200314213021", role:"AD"},
+  {id:40,known:"Pasindu Premalal",     nic:"943053456V",   role:"AD"},
+  {id:41,known:"Thanusha Deshani",     nic:"200251400481", role:"AD"},
+  {id:42,known:"Venura Lakshitha",     nic:"200215902825", role:"AD"},
+  {id:43,known:"Iresha Dilhani",       nic:"986282157V",   role:"TL"},
+  {id:44,known:"Lehan Hansaja",        nic:"200202202676", role:"TL"},
+  {id:45,known:"Pavithra Thangarajah", nic:"895163120V",   role:"TL"},
+  {id:46,known:"Preeni Sanoja",        nic:"887501084V",   role:"TL"},
+  {id:47,known:"Ruchini Navanjana",    nic:"977852595V",   role:"TL"},
+  {id:48,known:"Vihaga Makumbura",     nic:"200129502819", role:"TL"},
+];
+
+// ════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════
+let state = {
+  requestsOpen: false,
+  offSlotLimits: [8,8,8,8,8],
+  requests: []
+};
+let selectedDay = null;
+let currentUser = null; // {type:'admin'} or {type:'agent', agent:{...}}
+let pollTimer = null;
+
+// ════════════════════════════════════════════════════
+// FIREBASE
+// ════════════════════════════════════════════════════
+const isFirebaseOk = () => FIREBASE_URL !== "YOUR_FIREBASE_DB_URL_HERE";
+const fbRef = p => `${FIREBASE_URL}/${p}.json`;
+
+async function fbGet(p) {
+  try { const r = await fetch(fbRef(p)); return r.ok ? await r.json() : null; }
+  catch { return null; }
+}
+async function fbSet(p, d) {
+  try { await fetch(fbRef(p), {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)}); }
+  catch(e) { console.warn('Firebase write fail', e); }
+}
+
+function setSyncStatus(s) {
+  const el = document.getElementById('syncPill'); if(!el) return;
+  const map = {
+    loading: ['⏳','Loading…','var(--warn)'],
+    live:    ['🟢','Live',    'var(--accent)'],
+    saving:  ['💾','Saving…', 'var(--warn)'],
+    offline: ['⚠️','Offline', 'var(--red)'],
+  };
+  const [icon,txt,col] = map[s] || map.offline;
+  el.innerHTML = `<span style="color:${col}">${icon} ${txt}</span>`;
+}
+
+async function loadState() {
+  if(!isFirebaseOk()) {
+    setSyncStatus('offline');
+    renderCurrentView(); // ← render with local state even when offline
+    return;
+  }
+  setSyncStatus('loading');
+  try {
+    const data = await fbGet(WEEK_KEY);
+    if(data) {
+      if(data.requestsOpen !== undefined) state.requestsOpen = data.requestsOpen;
+      if(data.offSlotLimits) state.offSlotLimits = data.offSlotLimits;
+      if(data.requests) state.requests = data.requests;
+      if(data.weekLabel) document.getElementById('weekLabel').textContent = data.weekLabel;
+    }
+    setSyncStatus('live');
+  } catch(e) {
+    setSyncStatus('offline');
+  }
+  renderCurrentView();
+}
+
+async function saveState(partial) {
+  if(!isFirebaseOk()) return;
+  setSyncStatus('saving');
+  if(partial === 'requests') {
+    await fbSet(WEEK_KEY+'/requests', state.requests);
+  } else if(partial === 'slots') {
+    await fbSet(WEEK_KEY+'/offSlotLimits', state.offSlotLimits);
+  } else if(partial === 'toggle') {
+    await fbSet(WEEK_KEY+'/requestsOpen', state.requestsOpen);
+  } else {
+    await fbSet(WEEK_KEY, state);
+  }
+  setSyncStatus('live');
+}
+
+function startPolling() {
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    if(!isFirebaseOk()) return;
+    const data = await fbGet(WEEK_KEY);
+    if(!data) { setSyncStatus('offline'); return; }
+    let changed = false;
+    if(data.requestsOpen !== undefined && data.requestsOpen !== state.requestsOpen) {
+      state.requestsOpen = data.requestsOpen; changed = true;
+    }
+    if(data.offSlotLimits && JSON.stringify(data.offSlotLimits) !== JSON.stringify(state.offSlotLimits)) {
+      state.offSlotLimits = data.offSlotLimits; changed = true;
+    }
+    if(data.requests && JSON.stringify(data.requests) !== JSON.stringify(state.requests)) {
+      state.requests = data.requests; changed = true;
+    }
+    if(changed) renderCurrentView();
+    setSyncStatus('live');
+  }, 7000);
+}
+
+// ════════════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════════════
+let loginMode = 'admin';
+
+function setLoginMode(mode) {
+  loginMode = mode;
+  document.getElementById('adminForm').style.display = mode==='admin' ? 'block' : 'none';
+  document.getElementById('agentForm').style.display = mode==='agent' ? 'block' : 'none';
+  document.getElementById('switchAdmin').classList.toggle('active', mode==='admin');
+  document.getElementById('switchAgent').classList.toggle('active', mode==='agent');
+  if(mode==='agent' && document.getElementById('agentSel').options.length < 2) populateAgentSelect();
+}
+
+function populateAgentSelect() {
+  const ads = AGENTS.filter(a=>a.role==='AD');
+  const tls = AGENTS.filter(a=>a.role==='TL');
+  document.getElementById('agentSel').innerHTML =
+    '<option value="">— Select your name —</option>' +
+    '<optgroup label="── Agents (AD) ──">' +
+      ads.map(a=>`<option value="${a.id}">#${a.id} ${a.known}</option>`).join('') +
+    '</optgroup>' +
+    '<optgroup label="── Team Leads (TL) ──">' +
+      tls.map(a=>`<option value="${a.id}">#${a.id} ${a.known}</option>`).join('') +
+    '</optgroup>';
+}
+
+function onAgentSelect() {
+  const id = parseInt(document.getElementById('agentSel').value);
+  const hint = document.getElementById('nicHint');
+  clearAgentErr();
+  if(!id) { hint.style.display='none'; return; }
+  const a = AGENTS.find(x=>x.id===id);
+  hint.textContent = 'Format: ' + (a.nic.endsWith('V') ? 'XXXXXXXXXV' : 'XXXXXXXXXXXX');
+  hint.style.display = 'block';
+}
+
+function clearAgentErr() { document.getElementById('agentErr').style.display='none'; }
+
+function doAdminLogin() {
+  const u = document.getElementById('adminUser').value.trim().toLowerCase();
+  const p = document.getElementById('adminPw').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS) {
+    document.getElementById('adminErr').style.display='none';
+    currentUser = {type:'admin'};
+    sessionStorage.setItem('riq_session', JSON.stringify(currentUser));
+    enterApp();
+  } else {
+    document.getElementById('adminErr').style.display='block';
+    document.getElementById('adminPw').value='';
+  }
+}
+
+function doAgentLogin() {
+  const id  = parseInt(document.getElementById('agentSel').value);
+  const nic = document.getElementById('agentNic').value.trim().toUpperCase();
+  if(!id) { showAgentErr('Please select your name.'); return; }
+  if(!nic) { showAgentErr('Please enter your NIC.'); return; }
+  const agent = AGENTS.find(a=>a.id===id);
+  if(agent.nic === nic) {
+    document.getElementById('agentErr').style.display='none';
+    currentUser = {type:'agent', agent};
+    sessionStorage.setItem('riq_session', JSON.stringify(currentUser));
+    enterApp();
+  } else {
+    showAgentErr('Wrong NIC. Please try again.');
+    document.getElementById('agentNic').value='';
+  }
+}
+
+function showAgentErr(msg) {
+  const el = document.getElementById('agentErr');
+  el.textContent = '❌ '+msg; el.style.display='block';
+}
+
+function enterApp() {
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainHeader').style.display='flex';
+  document.getElementById('mainPage').style.display='block';
+
+  const isAdmin = currentUser.type==='admin';
+  const isTL    = !isAdmin && currentUser.agent.role==='TL';
+  const av = document.getElementById('hdrAvatar');
+  av.className = 'hdr-avatar ' + (isAdmin?'admin':isTL?'tl':'agent');
+  av.textContent = isAdmin ? 'LP' : currentUser.agent.known.charAt(0);
+  document.getElementById('hdrName').textContent = isAdmin ? 'Admin' : currentUser.agent.known;
+
+  loadState().then(startPolling);
+}
+
+function doLogout() {
+  sessionStorage.removeItem('riq_session');
+  if(pollTimer) clearInterval(pollTimer);
+  currentUser=null; selectedDay=null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('mainHeader').style.display='none';
+  document.getElementById('mainPage').style.display='none';
+  document.getElementById('adminUser').value='';
+  document.getElementById('adminPw').value='';
+  document.getElementById('agentNic').value='';
+  document.getElementById('agentSel').value='';
+  document.getElementById('nicHint').style.display='none';
+  clearAgentErr();
+  document.getElementById('adminErr').style.display='none';
+}
+
+function checkSession() {
+  try {
+    const s = sessionStorage.getItem('riq_session');
+    if(!s) return false;
+    const cu = JSON.parse(s);
+    if(cu.type==='admin') { currentUser=cu; return true; }
+    if(cu.type==='agent') {
+      const a = AGENTS.find(x=>x.id===cu.agent.id);
+      if(a) { currentUser={type:'agent',agent:a}; return true; }
+    }
+  } catch{}
+  return false;
+}
+
+// ════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════
+function renderCurrentView() {
+  if(!currentUser) return;
+  if(currentUser.type==='admin') renderAdminView();
+  else renderAgentView();
+}
+
+// ── ADMIN ─────────────────────────────────────────
+function renderAdminView() {
+  document.getElementById('adminView').style.display='block';
+  document.getElementById('agentView').style.display='none';
+
+  // Toggle
+  const open = state.requestsOpen;
+  document.getElementById('requestToggle').checked = open;
+  document.getElementById('toggleStatus').textContent = open ? 'ON' : 'OFF';
+  document.getElementById('toggleStatus').className = 'toggle-status ' + (open?'on':'off');
+  document.getElementById('toggleHint').innerHTML = open
+    ? '🟢 Requests are <strong style="color:var(--accent)">OPEN</strong> — agents can now submit requests.'
+    : '🔒 Requests are <strong style="color:var(--red)">CLOSED</strong> — agents cannot submit requests.';
+
+  // Slots grid
+  document.getElementById('adminSlotsGrid').innerHTML = DAYS_SHORT.map((d,di)=>{
+    const used = state.requests.filter(r=>r.weekday===di).length;
+    const lim  = state.offSlotLimits[di];
+    const pct  = lim>0 ? Math.min(100,Math.round(used/lim*100)) : 0;
+    const col  = pct>=100?'var(--red)':pct>=75?'var(--warn)':'var(--accent)';
+    return `<div class="slot-card">
+      <div class="slot-day">${d}</div>
+      <div class="slot-date">${DAY_DATES[di]}</div>
+      <div class="slot-input-wrap">
+        <input type="number" class="slot-input" min="0" max="99" value="${lim}"
+               id="slotIn_${di}" onchange="state.offSlotLimits[${di}]=Math.max(0,parseInt(this.value)||0)">
+      </div>
+      <div class="slot-used">${used} used</div>
+      <div class="slot-bar"><div class="slot-bar-fill" style="background:${col};width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Requests
+  const reqs = [...state.requests].sort((a,b)=>a.weekday-b.weekday||a.agentId-b.agentId);
+  document.getElementById('reqSummary').textContent = `${reqs.length} request${reqs.length!==1?'s':''}`;
+  const agMap = Object.fromEntries(AGENTS.map(a=>[a.id,a]));
+  document.getElementById('adminReqList').innerHTML = reqs.length
+    ? reqs.map(r=>{
+        const ag = agMap[r.agentId];
+        const isTL = ag?.role==='TL';
+        return `<div class="req-item">
+          <span class="req-num">#${r.agentId}</span>
+          <span class="req-name">${r.agentName}</span>
+          ${isTL?'<span class="req-role tl">TL</span>':'<span class="req-role ad">AD</span>'}
+          <span class="req-day">📅 ${DAYS_SHORT[r.weekday]} ${DAY_DATES[r.weekday]}</span>
+          <button class="req-del" onclick="adminDeleteReq(${r.agentId})" title="Remove">✕</button>
+        </div>`;
+      }).join('')
+    : '<div class="empty-msg">No requests submitted yet.</div>';
+}
+
+// ── AGENT ─────────────────────────────────────────
+function renderAgentView() {
+  document.getElementById('adminView').style.display='none';
+  document.getElementById('agentView').style.display='block';
+
+  const open = state.requestsOpen;
+  document.getElementById('closedBanner').style.display  = open ? 'none' : 'block';
+  document.getElementById('agentOpenView').style.display = open ? 'block' : 'none';
+
+  // Always update week date strip (even if closed, for info)
+  const titleEl = document.getElementById('agentWeekTitle');
+  const datesEl = document.getElementById('agentWeekDates');
+  if(titleEl && datesEl) {
+    const weekLbl = document.getElementById('weekLabel').textContent;
+    titleEl.textContent = weekLbl || 'Current Week';
+    datesEl.textContent = DAY_DATES.length===5
+      ? 'Mon ' + DAY_DATES[0] + '  ·  Tue ' + DAY_DATES[1] + '  ·  Wed ' + DAY_DATES[2] + '  ·  Thu ' + DAY_DATES[3] + '  ·  Fri ' + DAY_DATES[4]
+      : 'Dates not set yet';
+  }
+
+  // Update closed banner week info too
+  const closedInfo = document.getElementById('closedWeekInfo');
+  if(closedInfo) {
+    const lbl = document.getElementById('weekLabel').textContent;
+    closedInfo.textContent = lbl ? ('📅 ' + lbl) : '';
+  }
+
+  if(!open) return;
+
+  // Slots display
+  document.getElementById('agentSlotsDisplay').innerHTML = DAYS_SHORT.map((d,di)=>{
+    const used = state.requests.filter(r=>r.weekday===di).length;
+    const lim  = state.offSlotLimits[di];
+    const av   = Math.max(0,lim-used);
+    const pct  = lim>0 ? Math.min(100,Math.round(used/lim*100)) : 100;
+    const col  = av===0?'var(--red)':av<=2?'var(--warn)':'var(--accent)';
+    return `<div class="agent-slot">
+      <div class="agent-slot-day">${d}</div>
+      <div class="agent-slot-date">${DAY_DATES[di]}</div>
+      <div class="agent-slot-num" style="color:${col}">${av}</div>
+      <div class="agent-slot-lbl">left</div>
+      <div class="aslot-bar"><div class="aslot-fill" style="background:${col};width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Existing request
+  const me = currentUser.agent;
+  const myReq = state.requests.find(r=>r.agentId===me.id);
+  document.getElementById('existReqBadge').style.display = myReq ? 'flex' : 'none';
+  document.getElementById('dayPickerWrap').style.display = myReq ? 'none' : 'block';
+  if(myReq) {
+    document.getElementById('existReqDay').textContent = `${DAYS_FULL[myReq.weekday]} (${DAY_DATES[myReq.weekday]})`;
+  }
+
+  // Day picker
+  document.getElementById('dayPicker').innerHTML = DAYS_SHORT.map((d,di)=>{
+    const used = state.requests.filter(r=>r.weekday===di).length;
+    const av   = Math.max(0, state.offSlotLimits[di]-used);
+    const full = av===0;
+    const sel  = selectedDay===di;
+    const col  = full?'var(--red)':av<=2?'var(--warn)':'var(--text3)';
+    return `<div class="day-pick-btn ${full?'full':''} ${sel?'sel':''}"
+               onclick="${full?'':'pickDay('+di+')'}">
+      <span class="dpd">${d}</span>
+      <span class="dpa" style="color:${sel?'var(--accent)':col}">${full?'Full':av+' left'}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('submitReqBtn').disabled = selectedDay===null;
+
+  // All requests
+  const sorted = [...state.requests].sort((a,b)=>a.weekday-b.weekday||a.agentId-b.agentId);
+  const agMap = Object.fromEntries(AGENTS.map(a=>[a.id,a]));
+  document.getElementById('agentReqList').innerHTML = sorted.length
+    ? sorted.map(r=>{
+        const isMe = r.agentId===me.id;
+        const ag   = agMap[r.agentId];
+        return `<div class="all-req-item ${isMe?'mine':''}">
+          <span class="ari-num">#${r.agentId}</span>
+          <span class="ari-name">${r.agentName}</span>
+          ${ag?.role==='TL'?'<span class="ari-tl">TL</span>':''}
+          ${isMe?'<span class="ari-you">YOU</span>':''}
+          <span class="ari-day">📅 ${DAYS_SHORT[r.weekday]} ${DAY_DATES[r.weekday]}</span>
+        </div>`;
+      }).join('')
+    : '<div class="empty-msg">No requests yet.</div>';
+}
+
+// ════════════════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════════════════
+function onToggleChange() {
+  state.requestsOpen = document.getElementById('requestToggle').checked;
+  renderAdminView();
+  saveState('toggle');
+  showToast(state.requestsOpen ? '✅ Requests OPEN' : '🔒 Requests CLOSED');
+}
+
+function saveSlots() {
+  [0,1,2,3,4].forEach(di=>{
+    const el = document.getElementById('slotIn_'+di);
+    if(el) state.offSlotLimits[di] = Math.max(0,parseInt(el.value)||0);
+  });
+  saveState('slots');
+  renderAdminView();
+  showToast('Slots saved ✓');
+}
+
+function adminDeleteReq(agentId) {
+  state.requests = state.requests.filter(r=>r.agentId!==agentId);
+  saveState('requests');
+  renderAdminView();
+  showToast('Request removed');
+}
+
+function clearAllRequests() {
+  if(!confirm('Clear ALL requests?')) return;
+  state.requests = [];
+  saveState('requests');
+  renderAdminView();
+  showToast('All requests cleared');
+}
+
+function pickDay(di) {
+  selectedDay = di;
+  renderAgentView();
+  notice(null);
+}
+
+async function submitReq() {
+  if(selectedDay===null) return;
+  const me = currentUser.agent;
+  const used = state.requests.filter(r=>r.weekday===selectedDay).length;
+  if(used >= state.offSlotLimits[selectedDay]) {
+    notice('err','No slots left on this day!'); return;
+  }
+  if(state.requests.find(r=>r.agentId===me.id)) {
+    notice('err','Already submitted — cancel first.'); return;
+  }
+  state.requests.push({agentId:me.id, agentName:me.known, weekday:selectedDay});
+  await saveState('requests');
+  notice('ok',`✓ Request submitted: ${DAYS_FULL[selectedDay]}`);
+  selectedDay=null;
+  renderAgentView();
+  showToast('Request submitted ✓');
+}
+
+async function cancelMyReq() {
+  const me = currentUser.agent;
+  state.requests = state.requests.filter(r=>r.agentId!==me.id);
+  await saveState('requests');
+  renderAgentView();
+  showToast('Request cancelled');
+}
+
+function notice(type, msg) {
+  ['err','ok'].forEach(k=>{
+    const el=document.getElementById('agentNotice'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(el) el.style.display='none';
+  });
+  if(!type) return;
+  const el=document.getElementById('agentNotice'+type.charAt(0).toUpperCase()+type.slice(1));
+  if(el) { el.textContent=msg; el.style.display='block'; }
+}
+
+function showToast(msg, err) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=err?'var(--red)':'var(--accent)';
+  t.style.color=err?'#fff':'#080a0f';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ════════════════════════════════════════════════════
+// CUSTOM CALENDAR PICKER
+// ════════════════════════════════════════════════════
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MSHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let selectedMonday = null; // Date object
+
+function toggleCalendar() {
+  const pop = document.getElementById('calendarPop');
+  if(pop.style.display === 'none') {
+    pop.style.display = 'block';
+    renderCalGrid();
+  } else {
+    pop.style.display = 'none';
+  }
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if(calMonth > 11) { calMonth = 0; calYear++; }
+  if(calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalGrid();
+}
+
+function renderCalGrid() {
+  document.getElementById('calMonthLabel').textContent = MONTHS[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('calGrid');
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  grid.innerHTML = '';
+
+  for(let i = 0; i < firstDay; i++) {
+    grid.appendChild(document.createElement('div'));
+  }
+
+  for(let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(calYear, calMonth, d).getDay();
+    const isMonday = (dow === 1);
+    const isSel = selectedMonday &&
+      selectedMonday.getDate() === d &&
+      selectedMonday.getMonth() === calMonth &&
+      selectedMonday.getFullYear() === calYear;
+
+    const el = document.createElement('div');
+    el.textContent = String(d);
+    el.style.cssText = 'text-align:center;padding:6px 2px;border-radius:6px;font-size:12px;font-family:DM Mono,monospace;transition:all .1s;border:1px solid transparent;';
+
+    if (isSel) {
+      el.style.background = '#00e5a0';
+      el.style.color = '#080a0f';
+      el.style.borderColor = '#00e5a0';
+      el.style.cursor = 'pointer';
+      el.style.fontWeight = '700';
+    } else if (isMonday) {
+      el.style.background = '#1e2535';
+      el.style.color = '#dde3f0';
+      el.style.borderColor = '#252d3f';
+      el.style.cursor = 'pointer';
+      el.style.fontWeight = '600';
+      (function(cy, cm, cd) {
+        el.onclick    = function() { selectMonday(cy, cm, cd); };
+        el.onmouseover = function() { el.style.background = '#003322'; el.style.borderColor = '#00e5a0'; };
+        el.onmouseout  = function() { el.style.background = '#1e2535'; el.style.borderColor = '#252d3f'; };
+      })(calYear, calMonth, d);
+    } else {
+      el.style.background = 'transparent';
+      el.style.color = '#4a5468';
+      el.style.cursor = 'default';
+    }
+
+    grid.appendChild(el);
+  }
+}
+
+
+function selectMonday(y, m, d) {
+  selectedMonday = new Date(y, m, d);
+  const fri = new Date(y, m, d+4);
+
+  // Update displays
+  document.getElementById('weekStartDisplay').textContent =
+    '📅 ' + fmtDateShort(selectedMonday) + ' (Mon)';
+  document.getElementById('weekStartDisplay').style.color = 'var(--accent)';
+  document.getElementById('weekStartDisplay').style.borderColor = 'var(--accent)';
+
+  document.getElementById('weekEndDisplay').textContent =
+    '📅 ' + fmtDateShort(fri) + ' (Fri)';
+  document.getElementById('weekEndDisplay').style.color = 'var(--text)';
+
+  document.getElementById('weekDatePreview').innerHTML =
+    '📅 <strong>' + fmtDateShort(selectedMonday) + ' (Mon)</strong>  →  <strong>' + fmtDateShort(fri) + ' (Fri)</strong> — click Apply ✓ to confirm';
+
+  renderCalGrid(); // re-render to show selection
+  // Auto close after short delay
+  setTimeout(()=>{ document.getElementById('calendarPop').style.display='none'; }, 300);
+}
+
+function fmtDate(d) {
+  return String(d.getDate()).padStart(2,'0') + '-' + MSHORT[d.getMonth()];
+}
+function fmtDateShort(d) {
+  return String(d.getDate()).padStart(2,'0') + ' ' + MSHORT[d.getMonth()];
+}
+
+function applyWeekDates() {
+  if(!selectedMonday) { showToast('Please select a Monday first', true); return; }
+
+  const startD = selectedMonday;
+  const endD   = new Date(startD.getFullYear(), startD.getMonth(), startD.getDate()+4);
+
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
+  const dayFull  = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+  const newDates = [];
+  for(let i=0;i<5;i++){
+    const d = new Date(startD.getFullYear(), startD.getMonth(), startD.getDate()+i);
+    newDates.push(fmtDate(d));
+  }
+
+  DAY_DATES.length=0; newDates.forEach(x=>DAY_DATES.push(x));
+  DAYS_SHORT.length=0; dayNames.forEach(x=>DAYS_SHORT.push(x));
+  DAYS_FULL.length=0;  dayFull.forEach(x=>DAYS_FULL.push(x));
+
+  const label = fmtDateShort(startD) + ' – ' + fmtDateShort(endD) + ' ' + startD.getFullYear();
+  document.getElementById('weekLabel').textContent = label;
+  state.weekLabel = label;
+
+  document.getElementById('weekDatePreview').innerHTML =
+    '✅ <strong style="color:var(--accent)">' + label + '</strong> — applied to slots below';
+
+  if(isFirebaseOk()) {
+    fbSet(WEEK_KEY+'/weekLabel', label);
+    fbSet(WEEK_KEY+'/dayDates', [...DAY_DATES]);
+  }
+
+  renderAdminView();
+  showToast('Week dates updated ✓');
+}
+
+function resetWeekDates() {
+  selectedMonday = null;
+  document.getElementById('weekStartDisplay').textContent = '📅 Click to select Monday…';
+  document.getElementById('weekStartDisplay').style.color = 'var(--text)';
+  document.getElementById('weekStartDisplay').style.borderColor = 'var(--border2)';
+  document.getElementById('weekEndDisplay').textContent = 'Auto-filled';
+  document.getElementById('weekEndDisplay').style.color = 'var(--text2)';
+  document.getElementById('calendarPop').style.display = 'none';
+  document.getElementById('weekDatePreview').innerHTML =
+    '📅 Select a Monday above — Friday will auto-fill, then click Apply';
+
+  const defaults = ['Mon','Tue','Wed','Thu','Fri'];
+  const defaultDates = ['--','--','--','--','--'];
+  const defaultFull  = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+  DAY_DATES.length=0;  defaultDates.forEach(x=>DAY_DATES.push(x));
+  DAYS_SHORT.length=0; defaults.forEach(x=>DAYS_SHORT.push(x));
+  DAYS_FULL.length=0;  defaultFull.forEach(x=>DAYS_FULL.push(x));
+
+  document.getElementById('weekLabel').textContent = 'No week set';
+  state.weekLabel = '';
+  renderAdminView();
+  showToast('Week dates cleared');
+}
+
+// Restore saved dates from Firebase state
+function restoreDatesFromState(data) {
+  if(data && data.dayDates && data.dayDates.length===5) {
+    DAY_DATES.length=0; data.dayDates.forEach(x=>DAY_DATES.push(x));
+    const wpEl = document.getElementById('weekDatePreview');
+    if(wpEl) wpEl.innerHTML =
+      '✅ <strong style="color:var(--accent)">' + (data.weekLabel||'') + '</strong> — loaded from saved config';
+    // Update display boxes
+    const sd = document.getElementById('weekStartDisplay');
+    const ed = document.getElementById('weekEndDisplay');
+    if(sd && data.dayDates[0] !== '--') {
+      sd.textContent = '📅 ' + data.dayDates[0] + ' (Mon)';
+      sd.style.color = 'var(--accent)';
+    }
+    if(ed && data.dayDates[4] !== '--') {
+      ed.textContent = '📅 ' + data.dayDates[4] + ' (Fri)';
+      ed.style.color = 'var(--text)';
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════
+// EXPORT CSV
+// ════════════════════════════════════════════════════
+function exportRequests() {
+  if(!state.requests.length) { showToast('No requests to export', true); return; }
+  const agMap = Object.fromEntries(AGENTS.map(a=>[a.id,a]));
+  const sorted = [...state.requests].sort((a,b)=>a.weekday-b.weekday||a.agentId-b.agentId);
+  const weekLbl = document.getElementById('weekLabel').textContent;
+
+  let csv = 'No,Name,Role,Day,Date,Week\n';
+  sorted.forEach((r,i)=>{
+    const ag = agMap[r.agentId];
+    const role = ag?.role || 'AD';
+    const day  = DAYS_FULL[r.weekday]  || '';
+    const date = DAY_DATES[r.weekday]  || '';
+    csv += [i+1, '"'+r.agentName+'"', role, day, date, '"'+weekLbl+'"'].join(',') + '\n';
+  });
+
+  // Summary rows
+  csv += '\n--- SUMMARY ---\n';
+  csv += 'Day,Date,Requests,Limit\n';
+  [0,1,2,3,4].forEach(di=>{
+    const cnt = state.requests.filter(r=>r.weekday===di).length;
+    csv += [DAYS_SHORT[di], DAY_DATES[di], cnt, state.offSlotLimits[di]].join(',') + '\n';
+  });
+
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.download = 'dayoff_requests_' + dateStr + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported ✓');
+}
+
+// ════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(checkSession()) enterApp();
+});
+</script>
+</body>
+</html>
