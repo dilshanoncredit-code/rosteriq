@@ -874,7 +874,7 @@ let pollTimer = null;
 // ════════════════════════════════════════════════════
 // FIREBASE
 // ════════════════════════════════════════════════════
-const isFirebaseOk = () => FIREBASE_URL !== "https://rosteriq-8f198-default-rtdb.firebaseio.com";
+const isFirebaseOk = () => true;
 const fbRef = p => `${FIREBASE_URL}/${p}.json`;
 
 async function fbGet(p) {
