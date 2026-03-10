@@ -795,7 +795,7 @@ body::before {
 // ════════════════════════════════════════════════════
 // CONFIG  ← Edit these two lines
 // ════════════════════════════════════════════════════
-const FIREBASE_URL = "https://console.firebase.google.com/project/rosteriq-8f198/database/rosteriq-8f198-default-rtdb/data/~2F"; // e.g. https://rosteriq-xxxx-default-rtdb.firebaseio.com
+const FIREBASE_URL = "https://rosteriq-8f198-default-rtdb.firebaseio.com"; // e.g. https://rosteriq-xxxx-default-rtdb.firebaseio.com
 const WEEK_KEY     = "week_02mar";                 // change each week
 
 const ADMIN_USER = "admin";
@@ -874,7 +874,7 @@ let pollTimer = null;
 // ════════════════════════════════════════════════════
 // FIREBASE
 // ════════════════════════════════════════════════════
-const isFirebaseOk = () => FIREBASE_URL !== "YOUR_FIREBASE_DB_URL_HERE";
+const isFirebaseOk = () => FIREBASE_URL !== "https://rosteriq-8f198-default-rtdb.firebaseio.com";
 const fbRef = p => `${FIREBASE_URL}/${p}.json`;
 
 async function fbGet(p) {
