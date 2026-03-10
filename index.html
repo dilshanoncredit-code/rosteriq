@@ -801,15 +801,15 @@ body::before {
 // CONFIG  ← Edit these two lines
 // ════════════════════════════════════════════════════
 const FIREBASE_URL = "https://rosteriq-8f198-default-rtdb.firebaseio.com";
-const WEEK_KEY     = "week_02mar";                 // change each week
+const WEEK_KEY     = "";                 // change each week
 
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 
 const DAYS_SHORT = ['Mon','Tue','Wed','Thu','Fri'];
 const DAYS_FULL  = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
-const DAY_DATES = ["02 Mar", "03 Mar", "04 Mar", "05 Mar", "06 Mar"];
-const CURRENT_WEEK_ID = "week_02mar";
+const DAY_DATES = ["","","","",""];
+const CURRENT_WEEK_ID = "";
 
 // ════════════════════════════════════════════════════
 // AGENTS  (Name + NIC)
@@ -1128,7 +1128,7 @@ function renderAdminView() {
     const col  = pct>=100?'var(--red)':pct>=75?'var(--warn)':'var(--accent)';
     return `<div class="slot-card">
       <div class="slot-day">${d}</div>
-      <div class="slot-date">${DAY_DATES[di]}</div>
+      <div class="slot-date"></div>
       <div class="slot-input-wrap">
         <input type="number" class="slot-input" min="0" max="99" value="${lim}"
                id="slotIn_${di}" onchange="state.offSlotLimits[${di}]=Math.max(0,parseInt(this.value)||0)">
@@ -1150,7 +1150,7 @@ function renderAdminView() {
           <span class="req-num">#${r.agentId}</span>
           <span class="req-name">${r.agentName}</span>
           ${isTL?'<span class="req-role tl">TL</span>':'<span class="req-role ad">AD</span>'}
-          <span class="req-day">📅 ${DAYS_SHORT[r.weekday]} ${DAY_DATES[r.weekday]}</span>
+          <span class="req-day">📅 ${DAYS_SHORT[r.weekday]}</span>
           <button class="req-del" onclick="adminDeleteReq(${r.agentId})" title="Remove">✕</button>
         </div>`;
       }).join('')
@@ -1195,7 +1195,7 @@ function renderAgentView() {
     const col  = av===0?'var(--red)':av<=2?'var(--warn)':'var(--accent)';
     return `<div class="agent-slot">
       <div class="agent-slot-day">${d}</div>
-      <div class="agent-slot-date">${DAY_DATES[di]}</div>
+      <div class="agent-slot-date"></div>
       <div class="agent-slot-num" style="color:${col}">${av}</div>
       <div class="agent-slot-lbl">left</div>
       <div class="aslot-bar"><div class="aslot-fill" style="background:${col};width:${pct}%"></div></div>
