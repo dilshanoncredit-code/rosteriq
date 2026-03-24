@@ -2,12 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RosterIQ — Day Off Requests</title>
-
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RosterIQ — Day Off Requests</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -605,7 +600,7 @@ body::before {
 <!-- ══ MAIN PAGE ══════════════════════════════════ -->
 <div id="mainPage">
   <div class="container">
-    <div class="week-chip">📅 <span id="weekLabel">Request your Week OFF day</span></div>
+    <div class="week-chip">📅 <span id="weekLabel">Week of 02 Mar – 06 Mar 2025</span></div>
 
     <!-- ── ADMIN VIEW ── -->
     <div id="adminView" style="display:none">
@@ -801,15 +796,14 @@ body::before {
 // CONFIG  ← Edit these two lines
 // ════════════════════════════════════════════════════
 const FIREBASE_URL = "https://rosteriq-8f198-default-rtdb.firebaseio.com";
-const WEEK_KEY     = "";                 // change each week
+const WEEK_KEY     = "week_30mar";                 // change each week
 
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 
 const DAYS_SHORT = ['Mon','Tue','Wed','Thu','Fri'];
 const DAYS_FULL  = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
-const DAY_DATES = ["","","","",""];
-const CURRENT_WEEK_ID = "";
+const DAY_DATES  = ['02-Mar','03-Mar','04-Mar','05-Mar','06-Mar'];
 
 // ════════════════════════════════════════════════════
 // AGENTS  (Name + NIC)
@@ -863,8 +857,6 @@ const AGENTS = [
   {id:46,known:"Preeni Sanoja",        nic:"887501084V",   role:"TL"},
   {id:47,known:"Ruchini Navanjana",    nic:"977852595V",   role:"TL"},
   {id:48,known:"Vihaga Makumbura",     nic:"200129502819", role:"TL"},
-  {id:49,known:"Keerthi Madushan",     nic:"200409114020", role:"AD"},
-  {id:50,known:"Thisada Kaweethma",     nic:"200631601794", role:"AD"},
 ];
 
 // ════════════════════════════════════════════════════
@@ -882,31 +874,27 @@ let pollTimer = null;
 // ════════════════════════════════════════════════════
 // FIREBASE
 // ════════════════════════════════════════════════════
-const isFirebaseOk = () => true;
+const isFirebaseOk = () => FIREBASE_URL !== "YOUR_FIREBASE_DB_URL_HERE";
 const fbRef = p => `${FIREBASE_URL}/${p}.json`;
 
 async function fbGet(p) {
   try {
-    const url = fbRef(p);
-    console.log('[Firebase GET]', url);
-    const r = await fetch(url);
-    console.log('[Firebase GET status]', r.status);
-    if(!r.ok) { console.warn('[Firebase GET fail]', r.status, await r.text()); return null; }
-    const data = await r.json();
-    console.log('[Firebase GET data]', data);
-    return data;
+    const r = await fetch(fbRef(p), {mode:'cors'});
+    if(!r.ok) return null;
+    return await r.json();
   }
-  catch(e) { console.error('[Firebase GET error]', e.message); return null; }
+  catch(e) { console.warn('Firebase GET fail:', e.message); return null; }
 }
 async function fbSet(p, d) {
   try {
-    const url = fbRef(p);
-    console.log('[Firebase SET]', url);
-    const r = await fetch(url, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)});
-    console.log('[Firebase SET status]', r.status);
-    if(!r.ok) console.warn('[Firebase SET fail]', r.status, await r.text());
+    await fetch(fbRef(p), {
+      method: 'PUT',
+      mode: 'cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(d)
+    });
   }
-  catch(e) { console.error('[Firebase SET error]', e.message); }
+  catch(e) { console.warn('Firebase SET fail:', e.message); }
 }
 
 function setSyncStatus(s) {
@@ -1130,7 +1118,7 @@ function renderAdminView() {
     const col  = pct>=100?'var(--red)':pct>=75?'var(--warn)':'var(--accent)';
     return `<div class="slot-card">
       <div class="slot-day">${d}</div>
-      <div class="slot-date"></div>
+      <div class="slot-date">${DAY_DATES[di]}</div>
       <div class="slot-input-wrap">
         <input type="number" class="slot-input" min="0" max="99" value="${lim}"
                id="slotIn_${di}" onchange="state.offSlotLimits[${di}]=Math.max(0,parseInt(this.value)||0)">
@@ -1152,7 +1140,8 @@ function renderAdminView() {
           <span class="req-num">#${r.agentId}</span>
           <span class="req-name">${r.agentName}</span>
           ${isTL?'<span class="req-role tl">TL</span>':'<span class="req-role ad">AD</span>'}
-          <span class="req-day">📅 ${DAYS_SHORT[r.weekday]}</span>
+          <span class="req-day">📅 ${DAYS_SHORT[r.weekday]} ${DAY_DATES[r.weekday]}</span>
+          ${r.submittedAt ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:5px;">🕐 ${r.submittedAt}</span>` : ""}
           <button class="req-del" onclick="adminDeleteReq(${r.agentId})" title="Remove">✕</button>
         </div>`;
       }).join('')
@@ -1197,7 +1186,7 @@ function renderAgentView() {
     const col  = av===0?'var(--red)':av<=2?'var(--warn)':'var(--accent)';
     return `<div class="agent-slot">
       <div class="agent-slot-day">${d}</div>
-      <div class="agent-slot-date"></div>
+      <div class="agent-slot-date">${DAY_DATES[di]}</div>
       <div class="agent-slot-num" style="color:${col}">${av}</div>
       <div class="agent-slot-lbl">left</div>
       <div class="aslot-bar"><div class="aslot-fill" style="background:${col};width:${pct}%"></div></div>
@@ -1241,6 +1230,7 @@ function renderAgentView() {
           ${ag?.role==='TL'?'<span class="ari-tl">TL</span>':''}
           ${isMe?'<span class="ari-you">YOU</span>':''}
           <span class="ari-day">📅 ${DAYS_SHORT[r.weekday]} ${DAY_DATES[r.weekday]}</span>
+          ${r.submittedAt ? `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);">🕐 ${r.submittedAt}</span>` : ""}
         </div>`;
       }).join('')
     : '<div class="empty-msg">No requests yet.</div>';
@@ -1297,7 +1287,10 @@ async function submitReq() {
   if(state.requests.find(r=>r.agentId===me.id)) {
     notice('err','Already submitted — cancel first.'); return;
   }
-  state.requests.push({agentId:me.id, agentName:me.known, weekday:selectedDay});
+  const now = new Date();
+  const ts = now.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const tsDate = now.toLocaleDateString('en-GB', {day:'2-digit',month:'short'});
+  state.requests.push({agentId:me.id, agentName:me.known, weekday:selectedDay, submittedAt: tsDate+' '+ts});
   await saveState('requests');
   notice('ok',`✓ Request submitted: ${DAYS_FULL[selectedDay]}`);
   selectedDay=null;
@@ -1528,13 +1521,13 @@ function exportRequests() {
   const sorted = [...state.requests].sort((a,b)=>a.weekday-b.weekday||a.agentId-b.agentId);
   const weekLbl = document.getElementById('weekLabel').textContent;
 
-  let csv = 'No,Name,Role,Day,Date,Week\n';
+  let csv = 'No,Name,Role,Day,Date,Week,Submitted At\n';
   sorted.forEach((r,i)=>{
     const ag = agMap[r.agentId];
     const role = ag?.role || 'AD';
     const day  = DAYS_FULL[r.weekday]  || '';
     const date = DAY_DATES[r.weekday]  || '';
-    csv += [i+1, '"'+r.agentName+'"', role, day, date, '"'+weekLbl+'"'].join(',') + '\n';
+    csv += [i+1, '"'+r.agentName+'"', role, day, date, '"'+weekLbl+'"', r.submittedAt||''].join(',') + '\n';
   });
 
   // Summary rows
