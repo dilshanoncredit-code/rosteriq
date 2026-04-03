@@ -724,82 +724,8 @@ body::before {
         </div>
         <div id="adminReqList"></div>
       </div>
-    </div>
 
-    <!-- ── STAFF MANAGEMENT ── -->
-      <div class="section" id="staffSection">
-        <div class="section-hdr">
-          <div>
-            <div class="section-title">👥 Staff Management</div>
-            <div class="section-sub" id="staffCountSub">Managing staff list</div>
-          </div>
-          <button onclick="toggleStaffPanel()"
-            id="staffToggleBtn"
-            style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:5px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;">
-            ＋ Manage
-          </button>
-        </div>
-
-        <!-- Staff panel (collapsed by default) -->
-        <div id="staffPanel" style="display:none">
-
-          <!-- ADD NEW STAFF -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px;margin-bottom:12px;">
-            <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Add New Staff</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
-              <div>
-                <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:4px">Full Name</div>
-                <input type="text" id="newStaffName" placeholder="e.g. Kasun Perera"
-                  style="width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:9px 11px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;"
-                  onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
-              </div>
-              <div>
-                <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:4px">Emp Code</div>
-                <input type="text" id="newStaffEmp" placeholder="e.g. 540"
-                  style="width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:9px 11px;border-radius:8px;font-size:13px;font-family:'DM Mono',monospace;outline:none;"
-                  onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
-              </div>
-              <div>
-                <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:4px">NIC Number</div>
-                <input type="text" id="newStaffNic" placeholder="e.g. 200012345678"
-                  style="width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:9px 11px;border-radius:8px;font-size:13px;font-family:'DM Mono',monospace;outline:none;"
-                  onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-              <div>
-                <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:4px">Role</div>
-                <select id="newStaffRole"
-                  style="width:100%;background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:9px 11px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;">
-                  <option value="AD">AD — Agent</option>
-                  <option value="TL">TL — Team Lead</option>
-                </select>
-              </div>
-              <div style="display:flex;align-items:flex-end;">
-                <button onclick="addStaffMember()"
-                  style="width:100%;padding:9px;background:var(--accent);color:#080a0f;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;"
-                  onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
-                  ＋ Add Staff
-                </button>
-              </div>
-            </div>
-            <div id="staffAddMsg" style="display:none;font-size:12px;padding:7px 11px;border-radius:7px;"></div>
-          </div>
-
-          <!-- SEARCH + STAFF LIST -->
-          <div style="margin-bottom:8px;">
-            <input type="text" id="staffSearch" placeholder="🔍 Search by name or NIC…"
-              oninput="renderStaffList()"
-              style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;"
-              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
-          </div>
-
-          <div id="staffList" style="max-height:320px;overflow-y:auto;"></div>
-        </div>
-      </div>
-
-
-      <!-- STAFF MANAGEMENT -->
+    <!-- STAFF MANAGEMENT -->
       <div class="section" id="staffSection">
         <div class="section-hdr" style="margin-bottom:14px">
           <div>
@@ -868,6 +794,7 @@ body::before {
           </div>
         </div>
       </div>
+    </div>
 
     <!-- ── AGENT VIEW ── -->
     <div id="agentView" style="display:none">
